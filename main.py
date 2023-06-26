@@ -1,56 +1,85 @@
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import KFold
-import torch 
-import torch.nn as nn
-from torch.optim import Adam
-from strlearn.streams import StreamGenerator
+import numpy as np
 from matplotlib import pyplot as plt
-from helpers import train_epoch, test_epoch, reset_weights
-from pathlib import Path 
+from parameters import n_chunks, metrics
+from streams import weights_streams, drift_streams, chunk_streams
+from scipy.stats import ttest_rel
+from tabulate import tabulate
 
-epochs = 1000
+if __name__ == "__main__":
+    data_stream = chunk_streams
+    output = np.load("experiments/sea.npz")
+    scores = output["scores"]
+    t_scores = np.zeros((len(data_stream), len(data_stream)))
+    p_scores = np.zeros((len(data_stream), len(data_stream)))
+    better = np.full((len(data_stream), len(data_stream)), False)
 
-stream = StreamGenerator(
-  n_classes=2,
-  n_informative=2,
-  n_redundant=0,
-  n_repeated=0,
-  n_features=2,
-  random_state=105,
-  n_chunks=100,
-  chunk_size=500,
-)
+    # for m_index, metric in enumerate(metrics):
+    #     for s_index, stream in enumerate(data_stream):
+    #         temp_scores = scores[:, s_index, :, m_index]
+    #         mean_scores = np.mean(temp_scores, axis=1)
+    #         for i in range(2):
+    #             for j in range(2):
+    #                 t_score, p_score = ttest_rel(temp_scores[i], temp_scores[j])
+    #                 better[i, j] = (
+    #                     np.mean(temp_scores, axis=1)[i]
+    #                     > np.mean(temp_scores, axis=1)[j]
+    #                 )
+    #                 t_scores[i, j] = t_score
+    #                 p_scores[i, j] = p_score
 
-X, y = stream.get_chunk()
-kf = KFold(n_splits=5, shuffle=True)
+            # for i, _ in enumerate(data_stream):
+            #   for j, _ in enumerate(data_stream):
+            #      if(significant_better[i, j]):
+            #         print(i, f'with score {np.mean(temp_scores, axis=1)[i]} better then', j, f'with score {np.mean(temp_scores, axis=1)[j]}')
 
-while stream.get_chunk():
-  X, y = stream.get_chunk()
-  kf = KFold(n_splits=5, shuffle=True)
-  for i, (train_index, test_index) in enumerate(kf.split(X)):
-      print(f'Fold: {i + 1}')
-      X_train = torch.tensor(X[train_index], dtype=torch.float)
-      y_train = torch.tensor(y[train_index], dtype=torch.float)
-      X_test = torch.tensor(X[test_index], dtype=torch.float)
-      y_test = torch.tensor(y[test_index], dtype=torch.float)
+            # print(significant_better)
+    # significant = p_scores < 0.05
+    # significant_better = significant * better
+    # print(
+    #     tabulate(
+    #         significant_better,
+    #         headers=["NN", "SEA"],
+    #         showindex=["NN", "SEA"],
+    #         tablefmt="grid",
+    #     )
+    # )
 
-      model = nn.Sequential(
-        nn.Linear(2, 64),
-        nn.ReLU(),
-        nn.Linear(64, 128),
-        nn.ReLU(),
-        nn.Linear(128, 32),
-        nn.ReLU(),
-        nn.Linear(32, 1),
-      )
+    fig, ax = plt.subplots(3, 1)
+    fig.set_size_inches(17, 10)
+    fig.tight_layout(pad=5.0)
+    fig.suptitle("Metrics scores for unbalanced streams", fontsize=24)
+   
+    ax[0].plot(
+        range(n_chunks - 1),
+        scores[1, :],
+        label=["f1", "balanced_accuracy", "G-mean", "recall"],
+    )
+    ax[1].plot(
+        range(n_chunks - 1),
+        scores[1, :],
+        label=["f1", "balanced_accuracy", "G-mean", "recall"],
+    )
+    ax[2].plot(
+        range(n_chunks - 1),
+        scores[1, :],
+        label=["f1", "balanced_accuracy", "G-mean", "recall"],
+    )
 
-      optimizer = Adam(model.parameters(), lr=0.001 )
-      loss_fn = nn.BCEWithLogitsLoss()
+    ax[0].set_title("Stream chunk_size 200")
+    ax[1].set_title("Stream chunk_size 500")
+    ax[2].set_title("Stream chunk_size 1000")
 
-      for epoch in range(epochs):
-          train_loss = train_epoch(model, X_train, y_train, loss_fn, optimizer)
-          acc, test_loss = test_epoch(model, X_test, y_test, loss_fn)
-          if epoch % 100 == 0:
-            print(f'Epoch: {epoch}, Train Loss: {train_loss}, Test Loss: {test_loss}, Test Accuracy: {acc}')
-          
-          
+    ax[0].legend()
+    ax[1].legend()
+    ax[2].legend()
+
+    [a.set_xlabel("chunk") for a in ax]
+
+    [a.set_ylabel("scores") for a in ax]
+
+    # [a.set_ylabel('losses') for a in ax[1]]
+
+    # [a.set_ylabel('losses') for a in ax[1]]
+
+    plt.show()
+    fig.savefig('output_images/unbalanced_streams_sea_metrics.png', format='png')

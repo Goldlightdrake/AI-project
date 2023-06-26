@@ -1,0 +1,113 @@
+from strlearn.streams import StreamGenerator
+from parameters import n_chunks
+
+weights_streams = [
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=[0.4, 0.6],
+        chunk_size=500,
+    ),
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=[0.1, 0.9],
+        chunk_size=500,
+    ),
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=(2, 5, 0.9),
+        chunk_size=500,
+    ),
+]
+
+drift_streams = [
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=(2, 5, 0.9),
+        chunk_size=500,
+        n_drifts=3,
+        concept_sigmoid_spacing=5,
+        incremental=True,
+    ),
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=(2, 5, 0.9),
+        chunk_size=500,
+        n_drifts=3,
+        concept_sigmoid_spacing=5,
+        recurring=True,
+        incremental=True,
+    ),
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=(2, 5, 0.9),
+        chunk_size=500,
+        n_drifts=3,
+        concept_sigmoid_spacing=5,
+        recurring=True,
+    ),
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=(2, 5, 0.9),
+        chunk_size=500,
+        n_drifts=3,
+        concept_sigmoid_spacing=5,
+    ),
+]
+
+chunk_streams = [
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=(2, 5, 0.9),
+        chunk_size=200,
+    ),
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=(2, 5, 0.9),
+        chunk_size=500,
+    ),
+    StreamGenerator(
+        n_informative=2,
+        n_redundant=0,
+        n_repeated=0,
+        n_features=2,
+        n_chunks=n_chunks,
+        weights=(2, 5, 0.9),
+        chunk_size=1000,
+    ),
+]
